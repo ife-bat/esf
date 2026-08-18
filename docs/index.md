@@ -66,6 +66,13 @@ everything from one data set. See the
 - Looking for a symbol or function? [Public API](reference/api.md) and the
   [units convention](reference/units.md).
 
+!!! warning "Early release"
+
+    This is a first public version. Expect bugs, incomplete features, and
+    possible API changes. Please
+    [open an issue](https://github.com/ife-bat/esf/issues) if something
+    looks wrong.
+
 !!! note "Status"
 
     All fitting stages (calendar SEI, rates, SoC/temperature/time/DoD stress
@@ -77,10 +84,9 @@ everything from one data set. See the
 
 ## Contributors
 
-- [Jonathan Fagerström](https://github.com/JonathanFagerstrom)
-- [Jinsong Hua](https://github.com/JSHUAIFE)
-- [Julia Wind](https://github.com/juliawind)
-- [Jan Petter Mæhlen](https://github.com/jepegit)
+| [![Jonathan Fagerström](https://github.com/JonathanFagerstrom.png?size=80)](https://github.com/JonathanFagerstrom) | [![Jinsong Hua](https://github.com/JSHUAIFE.png?size=80)](https://github.com/JSHUAIFE) | [![Julia Wind](https://github.com/juliawind.png?size=80)](https://github.com/juliawind) | [![Jan Petter Mæhlen](https://github.com/jepegit.png?size=80)](https://github.com/jepegit) |
+|:---:|:---:|:---:|:---:|
+| [Jonathan Fagerström](https://github.com/JonathanFagerstrom) | [Jinsong Hua](https://github.com/JSHUAIFE) | [Julia Wind](https://github.com/juliawind) | [Jan Petter Mæhlen](https://github.com/jepegit) |
 
 ## Acknowledgments
 

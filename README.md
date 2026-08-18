@@ -12,6 +12,11 @@ loss. It does two things:
 2. **Simulation** — predict capacity loss for a drive cycle (rainflow cycle
    counting → stress factors → loss), given a set of parameters.
 
+> **Early release.** This is a first public version. Expect bugs, incomplete
+> features, and possible API changes. Please
+> [open an issue](https://github.com/ife-bat/esf/issues) if something looks
+> wrong.
+
 Based on Xu et al., *"Modeling of Lithium-Ion Battery Degradation for Cell
 Life Assessment"*, IEEE Trans. Smart Grid 9(2), 2018
 (<https://ieeexplore.ieee.org/document/7488267>), adapted at IFE. Provenance,
@@ -192,10 +197,9 @@ If you use this model in published work, cite the paper it implements:
 
 ## Contributors
 
-- [Jonathan Fagerström](https://github.com/JonathanFagerstrom)
-- [Jinsong Hua](https://github.com/JSHUAIFE)
-- [Julia Wind](https://github.com/juliawind)
-- [Jan Petter Mæhlen](https://github.com/jepegit)
+| [![Jonathan Fagerström](https://github.com/JonathanFagerstrom.png?size=80)](https://github.com/JonathanFagerstrom) | [![Jinsong Hua](https://github.com/JSHUAIFE.png?size=80)](https://github.com/JSHUAIFE) | [![Julia Wind](https://github.com/juliawind.png?size=80)](https://github.com/juliawind) | [![Jan Petter Mæhlen](https://github.com/jepegit.png?size=80)](https://github.com/jepegit) |
+|:---:|:---:|:---:|:---:|
+| [Jonathan Fagerström](https://github.com/JonathanFagerstrom) | [Jinsong Hua](https://github.com/JSHUAIFE) | [Julia Wind](https://github.com/juliawind) | [Jan Petter Mæhlen](https://github.com/jepegit) |
 
 ## Acknowledgments
 
