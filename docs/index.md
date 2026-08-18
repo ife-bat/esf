@@ -84,9 +84,24 @@ everything from one data set. See the
 
 ## Contributors
 
-| [![Jonathan Fagerström](https://github.com/JonathanFagerstrom.png?size=80)](https://github.com/JonathanFagerstrom) | [![Jinsong Hua](https://github.com/JSHUAIFE.png?size=80)](https://github.com/JSHUAIFE) | [![Julia Wind](https://github.com/juliawind.png?size=80)](https://github.com/juliawind) | [![Jan Petter Mæhlen](https://github.com/jepegit.png?size=80)](https://github.com/jepegit) |
-|:---:|:---:|:---:|:---:|
-| [Jonathan Fagerström](https://github.com/JonathanFagerstrom) | [Jinsong Hua](https://github.com/JSHUAIFE) | [Julia Wind](https://github.com/juliawind) | [Jan Petter Mæhlen](https://github.com/jepegit) |
+<div class="contributors">
+  <a href="https://github.com/JonathanFagerstrom">
+    <img src="https://github.com/JonathanFagerstrom.png?size=100" alt="Jonathan Fagerström" />
+    <span>Jonathan Fagerström</span>
+  </a>
+  <a href="https://github.com/JSHUAIFE">
+    <img src="https://github.com/JSHUAIFE.png?size=100" alt="Jinsong Hua" />
+    <span>Jinsong Hua</span>
+  </a>
+  <a href="https://github.com/juliawind">
+    <img src="https://github.com/juliawind.png?size=100" alt="Julia Wind" />
+    <span>Julia Wind</span>
+  </a>
+  <a href="https://github.com/jepegit">
+    <img src="https://github.com/jepegit.png?size=100" alt="Jan Petter Mæhlen" />
+    <span>Jan Petter Mæhlen</span>
+  </a>
+</div>
 
 ## Acknowledgments
 

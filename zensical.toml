@@ -30,6 +30,10 @@ nav = [
   ] },
 ]
 
+extra_css = [
+  "stylesheets/extra.css",
+]
+
 # MathJax (the architecture and background pages contain LaTeX)
 extra_javascript = [
   "javascripts/mathjax.js",

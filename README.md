@@ -197,9 +197,17 @@ If you use this model in published work, cite the paper it implements:
 
 ## Contributors
 
-| [![Jonathan Fagerström](https://github.com/JonathanFagerstrom.png?size=80)](https://github.com/JonathanFagerstrom) | [![Jinsong Hua](https://github.com/JSHUAIFE.png?size=80)](https://github.com/JSHUAIFE) | [![Julia Wind](https://github.com/juliawind.png?size=80)](https://github.com/juliawind) | [![Jan Petter Mæhlen](https://github.com/jepegit.png?size=80)](https://github.com/jepegit) |
-|:---:|:---:|:---:|:---:|
-| [Jonathan Fagerström](https://github.com/JonathanFagerstrom) | [Jinsong Hua](https://github.com/JSHUAIFE) | [Julia Wind](https://github.com/juliawind) | [Jan Petter Mæhlen](https://github.com/jepegit) |
+<p>
+  <a href="https://github.com/JonathanFagerstrom"><img src="https://github.com/JonathanFagerstrom.png?size=100" width="72" height="72" alt="Jonathan Fagerström"></a>
+  <a href="https://github.com/JSHUAIFE"><img src="https://github.com/JSHUAIFE.png?size=100" width="72" height="72" alt="Jinsong Hua"></a>
+  <a href="https://github.com/juliawind"><img src="https://github.com/juliawind.png?size=100" width="72" height="72" alt="Julia Wind"></a>
+  <a href="https://github.com/jepegit"><img src="https://github.com/jepegit.png?size=100" width="72" height="72" alt="Jan Petter Mæhlen"></a>
+</p>
+
+[Jonathan Fagerström](https://github.com/JonathanFagerstrom) ·
+[Jinsong Hua](https://github.com/JSHUAIFE) ·
+[Julia Wind](https://github.com/juliawind) ·
+[Jan Petter Mæhlen](https://github.com/jepegit)
 
 ## Acknowledgments
 
