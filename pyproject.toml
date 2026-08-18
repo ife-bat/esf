@@ -1,0 +1,92 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "esf"
+version = "0.1.0"
+description = "Empirical stress factor LIB degradation model"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Jinsong Hua", email = "jinsong.hua@ife.no" },
+    { name = "Julia Wind", email = "julia.wind@ife.no" },
+    { name = "Jan Petter Maehlen", email = "jan.petter.maehlen@ife.no" },
+]
+# Runtime dependencies of the `esf` package. Lower bounds are conservative
+# floors compatible with requires-python >= 3.12 (not exhaustively tested
+# minimums); upper bounds are intentionally left open.
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+    "scipy>=1.11",
+    "seaborn>=0.13",
+    "lmfit>=1.2",
+    "pint>=0.23",
+    "uncertainties>=3.1",
+    "rich>=13.0",
+    # ASTM E1049-85 rainflow counting (MIT); wrapped by esf/external/rainflow_adapter.py
+    "rainflow>=3.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-datadir",
+    "hypothesis>=6.0",
+    "ruff>=0.15",
+]
+# documentation site (Zensical); run with `uv run --group docs zensical serve`
+docs = [
+    "zensical",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+# lint the package and its tests only; vendored and data trees are out of scope
+extend-exclude = ["data", "scripts", "esf/external"]
+
+[tool.ruff.lint]
+# curated, low-noise set: pyflakes + a subset of pycodestyle (no line-length,
+# which the code deliberately overruns in docstrings/tables), import sorting,
+# bugbear, pyupgrade, and a few flake8-simplify rules.
+select = ["E4", "E7", "E9", "F", "W", "I", "B", "UP", "SIM"]
+ignore = [
+    "B028",    # warnings.warn without stacklevel -- revisit deliberately
+    "SIM108",  # ternary vs if/else -- stylistic
+    "SIM105",  # contextlib.suppress vs try/except/pass -- stylistic
+]
+
+[tool.ruff.lint.per-file-ignores]
+# the package __init__ registers models before re-exporting names it does not
+# itself use
+"esf/__init__.py" = ["E402", "F401"]
+"**/__init__.py" = ["F401"]
+
+[project.urls]
+Homepage = "https://github.com/ife-bat/esf"
+Repository = "https://github.com/ife-bat/esf.git"
+
+[tool.hatch.build.targets.wheel]
+packages = ["esf"]
+
+[tool.hatch.build]
+exclude = [
+    "tests",
+    "docs",
+    "data",
+    "development",
+    ".*",
+    "dev_*",
+    "scratch*",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-rA"
+testpaths = [
+    "tests",
+]

@@ -1,0 +1,41 @@
+*~
+__pycache__
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# environments / build
+.venv/
+esf.egg-info/
+dist/
+build/
+
+# tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.cache/
+
+# editors
+.idea/
+.vscode/
+.claude/
+
+# Zensical docs build output
+/site/
+
+# scratch
+tmp/
+/scratchpad.txt
+
+# Data that is not part of the public repository. Kept here as a guard so a
+# copy dropped into a working tree is never committed by accident.
+input_data/
+Ageing_Data_IFE/
+data/Ageing_Data_IFE/
+data/internal-data/
+/Operation_Data/
+**/Operation_Data/
+reference-private/
+*.pkl
