@@ -9,6 +9,7 @@ __pycache__
 esf.egg-info/
 dist/
 build/
+.env
 
 # tool caches
 .pytest_cache/
@@ -25,17 +26,8 @@ build/
 # Zensical docs build output
 /site/
 
-# scratch
+# Local and scratch
 tmp/
 /scratchpad.txt
-
-# Data that is not part of the public repository. Kept here as a guard so a
-# copy dropped into a working tree is never committed by accident.
-input_data/
-Ageing_Data_IFE/
-data/Ageing_Data_IFE/
-data/internal-data/
-/Operation_Data/
-**/Operation_Data/
-reference-private/
-*.pkl
+graphify-out/
+local/
