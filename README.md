@@ -188,3 +188,10 @@ If you use this model in published work, cite the paper it implements:
 > Lithium-Ion Battery Degradation for Cell Life Assessment," *IEEE
 > Transactions on Smart Grid*, vol. 9, no. 2, pp. 1131–1140, March 2018.
 > doi: [10.1109/TSG.2016.2578950](https://doi.org/10.1109/TSG.2016.2578950)
+
+## Acknowledgments
+
+This work was supported by Jernbanedirektoratet (the Norwegian Railway
+Directorate) through Europe's Rail Flagship Project 4 — *Sustainable and
+green rail systems* (FP4-Rail4EARTH), a Horizon Europe project of the
+Europe's Rail Joint Undertaking (grant agreement No. 101101917).

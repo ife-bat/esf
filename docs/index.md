@@ -74,3 +74,10 @@ everything from one data set. See the
     degradation curves. See the project
     [README](https://github.com/ife-bat/esf#readme) and
     `CHANGELOG.md` for the current release.
+
+## Acknowledgments
+
+This work was supported by Jernbanedirektoratet (the Norwegian Railway
+Directorate) through Europe's Rail Flagship Project 4 — *Sustainable and
+green rail systems* (FP4-Rail4EARTH), a Horizon Europe project of the
+Europe's Rail Joint Undertaking (grant agreement No. 101101917). 
