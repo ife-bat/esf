@@ -1,6 +1,7 @@
 # esf — empirical stress factor degradation model
 
 [![tests](https://github.com/ife-bat/esf/actions/workflows/tests.yml/badge.svg)](https://github.com/ife-bat/esf/actions/workflows/tests.yml)
+[![docs](https://img.shields.io/badge/docs-zensical-0ea5e9)](https://ife-bat.github.io/esf/)
 
 `esf` models Li-ion battery degradation as a product of empirical stress
 factors (temperature, SoC, DoD, time) scaling a nonlinear SEI-driven capacity
@@ -188,6 +189,13 @@ If you use this model in published work, cite the paper it implements:
 > Lithium-Ion Battery Degradation for Cell Life Assessment," *IEEE
 > Transactions on Smart Grid*, vol. 9, no. 2, pp. 1131–1140, March 2018.
 > doi: [10.1109/TSG.2016.2578950](https://doi.org/10.1109/TSG.2016.2578950)
+
+## Contributors
+
+- [Jonathan Fagerström](https://github.com/JonathanFagerstrom)
+- [Jinsong Hua](https://github.com/JSHUAIFE)
+- [Julia Wind](https://github.com/juliawind)
+- [Jan Petter Mæhlen](https://github.com/jepegit)
 
 ## Acknowledgments
 

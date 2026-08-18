@@ -75,6 +75,13 @@ everything from one data set. See the
     [README](https://github.com/ife-bat/esf#readme) and
     `CHANGELOG.md` for the current release.
 
+## Contributors
+
+- [Jonathan Fagerström](https://github.com/JonathanFagerstrom)
+- [Jinsong Hua](https://github.com/JSHUAIFE)
+- [Julia Wind](https://github.com/juliawind)
+- [Jan Petter Mæhlen](https://github.com/jepegit)
+
 ## Acknowledgments
 
 This work was supported by Jernbanedirektoratet (the Norwegian Railway
