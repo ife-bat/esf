@@ -36,15 +36,15 @@ jobs:
 
   # Deploys to GitHub Pages on pushes to main. Requires Pages to be enabled
   # for the repository (Settings -> Pages -> Source: GitHub Actions).
-  # deploy:
-  #   name: deploy to Pages
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   steps:
-  #     - name: Deploy
-  #       id: deployment
-  #       uses: actions/deploy-pages@v4
+  deploy:
+    name: deploy to Pages
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
