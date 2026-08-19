@@ -106,6 +106,11 @@ everything from one data set. See the
 ## Acknowledgments
 
 This work was supported by Jernbanedirektoratet (the Norwegian Railway
-Directorate) through Europe's Rail Flagship Project 4 — *Sustainable and
-green rail systems* (FP4-Rail4EARTH), a Horizon Europe project of the
-Europe's Rail Joint Undertaking (grant agreement No. 101101917). 
+Directorate) through the Europe's Rail project FP4-Rail4EARTH. The work
+within the Europe's Rail project FP4-Rail4EARTH is supported by the
+Europe's Rail Joint Undertaking and its members.
+The project is funded by the European Union. Views and opinion
+expressed are however those of the author(s) only and do not
+necessarily reflect those of the European Union or the Europe's Rail
+Joint Undertaking. Neither the European Union nor the granting
+authority can be held responsible for them. 
