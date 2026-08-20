@@ -52,7 +52,7 @@ The implementation is `esf.models.cycle_counting_algorithm.CycleCounter`
 - Only the State of Health (SoH) vs. cycle number is provided; the underlying
   profile must be simulated to reproduce the results (see
   `esf.simulations.dst_cycle.DSTCycleDeg`).
-- Data sets (in `data/Ageing_Data_Org/DST_cycles/`), with start/stop SoC in
+- Data sets (in `esf/data/Ageing_Data_Org/DST_cycles/`), with start/stop SoC in
   percent; the test room temperature is assumed 20 °C (293.15 K) based on the
   figure in the publication:
 
@@ -79,7 +79,7 @@ c_rate = np.array(
 
 ## Other aging data from the original publication
 
-In `data/Ageing_Data_Org/`:
+In `esf/data/Ageing_Data_Org/`:
 
 - `calendar_degradation/calend_deg_at_25_deg.csv` — calendar aging at 25 °C
   for several SoC levels

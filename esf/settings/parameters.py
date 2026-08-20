@@ -1,6 +1,7 @@
 import copy
 import json
 import logging
+import math
 import pathlib
 import warnings
 from collections.abc import Callable
@@ -17,10 +18,60 @@ from esf.settings.units import Q_, ureg  # noqa: F401  (re-exported for consumer
 logger = logging.getLogger(__name__)
 
 THIS_FOLDER = pathlib.Path(__file__).parent
-DATA_FOLDER = (THIS_FOLDER / "../../data/").resolve()
+# Data ships *inside* the package (esf/data/), so this resolves identically for
+# a source checkout, an editable install and a wheel. It used to point outside
+# the package (../../data/), which silently worked only when the process
+# happened to run from the repository root.
+PACKAGE_FOLDER = THIS_FOLDER.parent
+DATA_FOLDER = (PACKAGE_FOLDER / "data").resolve()
 DST_DATA_FOLDER = (DATA_FOLDER / "Ageing_Data_Org/DST_cycles/").resolve()
 PRMS_FOLDER = (DATA_FOLDER / "DegModelPara/").resolve()
 ESF_PARAMS_VERSION: int = 1
+
+#: Below this, a value claiming to be kelvin is almost certainly celsius.
+#: Liquid nitrogen is 77 K, so nothing a battery model should see sits under it.
+IMPLAUSIBLE_KELVIN_BELOW = 100.0
+#: Above this, a value claiming to be celsius is almost certainly kelvin.
+IMPLAUSIBLE_CELSIUS_ABOVE = 200.0
+
+
+def check_temperature_unit(temperature: float, temperature_unit: str) -> None:
+    """Warn when a temperature looks like it is in the wrong unit.
+
+    The failure this catches is silent and severe: passing 20 (°C) into a
+    parameter set expressed in kelvin makes every temperature stress factor
+    collapse, and the simulation returns a *completely flat* 100 % SoH curve
+    with no error. The number is physically absurd either way, so a warning
+    costs nothing and the alternative is trusting a wrong answer.
+
+    Args:
+        temperature: the value about to be used.
+        temperature_unit: the unit the parameters are expressed in.
+    """
+    try:
+        value = float(temperature)
+    except (TypeError, ValueError):
+        return
+    if not math.isfinite(value):
+        return
+
+    unit = str(temperature_unit).strip().lower()
+    if unit in {"k", "kelvin"} and value < IMPLAUSIBLE_KELVIN_BELOW:
+        warnings.warn(
+            f"temperature={value:g} was supplied for parameters in kelvin. "
+            f"That is below {IMPLAUSIBLE_KELVIN_BELOW:g} K and is very likely "
+            f"degrees celsius -- did you mean {value + 273.15:g} K? "
+            "Simulating at this value will under-predict degradation, "
+            "typically giving a flat 100 % SoH curve.",
+            stacklevel=3,
+        )
+    elif unit in {"degc", "c", "celsius"} and value > IMPLAUSIBLE_CELSIUS_ABOVE:
+        warnings.warn(
+            f"temperature={value:g} was supplied for parameters in degC. "
+            f"That is above {IMPLAUSIBLE_CELSIUS_ABOVE:g} °C and is very "
+            f"likely kelvin -- did you mean {value - 273.15:g} °C?",
+            stacklevel=3,
+        )
 
 TEMPERATURE_UNIT = "K"  # or "degC"
 

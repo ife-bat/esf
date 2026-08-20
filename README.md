@@ -142,7 +142,7 @@ K parameterizations) — temperatures are kelvin, always.
   - `simulations/` — drive-cycle and DST degradation simulation
   - `settings/` — `ESFParams`, enums, constants, the shared unit registry
   - `utils/` — converters
-- `data/` — aging data and example parameter files
+  - `data/` — aging data and example parameter files, shipped with the package
 - `development/` — the working documents: repo review, design decisions,
   session plan (start here if you want to change the code)
 - `docs/` — the documentation site (built with Zensical): background notes,
