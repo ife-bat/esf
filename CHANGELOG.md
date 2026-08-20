@@ -14,29 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-### Changed
-- **Initial public release.** This repository is a cleaned snapshot of the
-  internal development repository, published under the MIT license. It carries
-  fresh history: the internal repository keeps the full development history and
-  remains the source of truth. Snapshot taken from internal commit
-  `d9fa6a691b6a231f679526f5fa79a304b653a30f`.
-- Rainflow counting now uses the MIT-licensed
-  [`rainflow`](https://pypi.org/project/rainflow/) package instead of a vendored
-  GPL-3.0 implementation, so the whole project can ship under MIT.
-  `esf/external/rainflow_adapter.py` wraps it and returns a `(3, n_cycle)`
-  array of `(range, mean, count)`. The counting is unchanged — both are ASTM
-  E1049-85 and agree exactly; `tests/test_cycle_counting.py` pins the ASTM
-  reference result, and the DST reproduction regression is unaffected.
+## [0.1.0] — 2026-08-20
 
-### Removed
-- The Streamlit reference apps, the frozen `model_IFE` reference implementation
-  and its operating data, the exploratory notebooks, and the third-party
-  reference PDFs are not part of the public repository.
-
-## [0.1.0]
-
-First versioned release after the Round 1–3 cleanup and the Round 4 capability
-work. Highlights relative to the unversioned `0.0.4`:
+First public release ([v0.1.0](https://github.com/ife-bat/esf/releases/tag/v0.1.0)),
+and the first versioned release after the Round 1–3 cleanup and the Round 4
+capability work. Highlights relative to the unversioned `0.0.4`:
 
 ### Added
 - Public API (`import esf`): the two core workflows (data → fit → parameters;
@@ -60,6 +42,23 @@ work. Highlights relative to the unversioned `0.0.4`:
 - Fits can run without mutating `ESFParams` (`apply=False`); results are read
   via `fitted_parameters()` / `parameter_uncertainty()`.
 - Package structure: vendored algorithms live in `esf/external/`.
+- **Published as a cleaned public snapshot** of the internal development
+  repository, under the MIT license and with fresh history: the internal
+  repository keeps the full development history and remains the source of
+  truth. Snapshot taken from internal commit
+  `d9fa6a691b6a231f679526f5fa79a304b653a30f`.
+- Rainflow counting uses the MIT-licensed
+  [`rainflow`](https://pypi.org/project/rainflow/) package instead of a vendored
+  GPL-3.0 implementation, so the whole project can ship under MIT.
+  `esf/external/rainflow_adapter.py` wraps it and returns a `(3, n_cycle)`
+  array of `(range, mean, count)`. The counting is unchanged — both are ASTM
+  E1049-85 and agree exactly; `tests/test_cycle_counting.py` pins the ASTM
+  reference result, and the DST reproduction regression is unaffected.
+
+### Removed
+- The Streamlit reference apps, the frozen `model_IFE` reference implementation
+  and its operating data, the exploratory notebooks, and the third-party
+  reference PDFs are not part of the public repository.
 
 ### Fixed
 - Numerous correctness bugs pinned by regression tests during Rounds 1–3
