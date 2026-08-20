@@ -11,7 +11,6 @@ reference paper. I wonder if it still works...
 """
 import pathlib
 import sys
-import warnings
 from math import floor
 
 import matplotlib as mpl
@@ -20,17 +19,23 @@ import numpy as np
 import pandas as pd
 
 from esf.models.cycle_counting_algorithm import CycleCounter
-from esf.settings.parameters import ESFParams, get_example_params
+from esf.settings.parameters import (
+    DST_DATA_FOLDER,
+    PRMS_FOLDER,
+    ESFParams,
+    check_temperature_unit,
+    get_example_params,
+)
 from esf.simulations.degradation import (
     drive_cycle_degradation_calculator,
 )
 
 THIS_FOLDER = pathlib.Path(__file__).parent
-DST_DATA_FOLDER = (THIS_FOLDER / "../../data/Ageing_Data_Org/DST_cycles/").resolve()
-PRMS_FOLDER = (THIS_FOLDER / "../../data/DegModelPara/").resolve()
 
-if not DST_DATA_FOLDER.exists():
-    warnings.warn(f"Data folder not found: {DST_DATA_FOLDER}")
+# DST_DATA_FOLDER / PRMS_FOLDER come from esf.settings.parameters, which
+# resolves them inside the package. They were duplicated here with a different
+# (repo-relative) expression, so the two could disagree.
+__all__ = ["DST_DATA_FOLDER", "PRMS_FOLDER"]
 
 # TODO: save data to file and load it from file to make it possible
 #  to skip running the simulations for each dst cycle every time
@@ -64,6 +69,8 @@ class DSTCycleDeg:
         degradation_kwargs: dict | None = None,
         use_simple_degradation: bool = False,
     ):
+        check_temperature_unit(temperature, prms.temperature_unit)
+
         self.soc_min = soc_min
         self.soc_max = soc_max
         self.prms = prms

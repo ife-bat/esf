@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "esf"
-version = "0.1.0"
+version = "0.1.1"
 description = "Empirical stress factor LIB degradation model"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -47,7 +47,7 @@ docs = [
 target-version = "py312"
 line-length = 88
 # lint the package and its tests only; vendored and data trees are out of scope
-extend-exclude = ["data", "scripts", "esf/external"]
+extend-exclude = ["esf/data", "scripts", "esf/external"]
 
 [tool.ruff.lint]
 # curated, low-noise set: pyflakes + a subset of pycodestyle (no line-length,
@@ -77,7 +77,6 @@ packages = ["esf"]
 exclude = [
     "tests",
     "docs",
-    "data",
     "development",
     ".*",
     "dev_*",

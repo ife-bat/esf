@@ -14,6 +14,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-08-20
+
+Two defects that only showed up once the package was consumed from a wheel
+rather than from a source checkout.
+
+### Fixed
+- **The bundled data now ships with the package.** `data/` has moved to
+  `esf/data/` and is resolved relative to the package, not to
+  `esf/settings/../../data`. The old path happened to work in a source
+  checkout — including in CI — and raised `FileNotFoundError` for anyone who
+  installed `esf`, so `dst_cycles_from_experimental_data()` and
+  `example_sample_data()` were unusable outside the repository.
+  `esf.simulations.dst_cycle` no longer derives `DST_DATA_FOLDER` /
+  `PRMS_FOLDER` a second time, so the two modules cannot disagree.
+- **A temperature in the wrong unit is no longer silent.**
+  `check_temperature_unit()` warns when a value looks like celsius against
+  kelvin parameters (or the reverse), and `DSTCycleDeg` calls it. Passing
+  `temperature=20` to a kelvin parameter set — `get_example_params()` and the
+  repo port are both kelvin — collapses every temperature stress factor and
+  returns a completely flat 100 % SoH curve with no error.
+
+### Changed
+- `DATA_FOLDER`, `DST_DATA_FOLDER` and `PRMS_FOLDER` now point inside the
+  package. They are submodule-level names, so internal by the versioning
+  policy; anything that hard-coded a repository-root `data/` path needs
+  updating.
+
 ## [0.1.0] — 2026-08-20
 
 First public release ([v0.1.0](https://github.com/ife-bat/esf/releases/tag/v0.1.0)),
