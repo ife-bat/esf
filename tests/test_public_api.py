@@ -15,6 +15,61 @@ class TestPublicApi:
         for name in esf.__all__:
             assert getattr(esf, name) is not None, name
 
+    def test_dst_reference_data_is_reachable_top_level(self):
+        """The DST loader and its SoC windows are public.
+
+        The UI consumes both; before 0.2.0 they were only importable from
+        esf.simulations.dst_cycle, i.e. internal by the versioning policy while
+        being public in practice.
+        """
+        import esf
+
+        for name in (
+            "dst_cycles_from_experimental_data",
+            "dst_cycles_experimental_data_v_lims",
+            "drive_cycle_002",
+        ):
+            assert name in esf.__all__
+
+    def test_dst_loader_defaults_to_the_bundled_data(self):
+        import esf
+
+        frame = esf.dst_cycles_from_experimental_data()
+        assert list(frame.columns) == ["N", "SoH", "label"]
+        assert frame["label"].nunique() == 7
+        assert not frame.empty
+
+    def test_dst_loader_accepts_a_string_path(self):
+        import esf
+        from esf.settings.parameters import DST_DATA_FOLDER
+
+        frame = esf.dst_cycles_from_experimental_data(str(DST_DATA_FOLDER))
+        assert frame["label"].nunique() == 7
+
+    def test_dst_windows_match_the_loaded_labels(self):
+        import esf
+
+        v_min, v_max = esf.dst_cycles_experimental_data_v_lims()
+        assert len(v_min) == len(v_max) == 7
+        labels = set(esf.dst_cycles_from_experimental_data()["label"])
+        for lo, hi in zip(v_min, v_max, strict=True):
+            assert f"{lo}-{hi} @ 20°C" in labels
+
+    def test_dst_loader_is_quiet(self, capsys):
+        """It used to print a dataframe head on every call."""
+        import esf
+
+        esf.dst_cycles_from_experimental_data()
+        assert capsys.readouterr().out == ""
+
+    def test_both_example_drive_cycles_have_the_same_shape(self):
+        import esf
+
+        one = esf.drive_cycle_001(verbose=False)
+        two = esf.drive_cycle_002(verbose=False)
+        assert list(one.columns) == list(two.columns)
+        assert not two.empty
+
     def test_core_workflow_names_are_exported(self):
         import esf
 

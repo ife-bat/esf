@@ -11,6 +11,9 @@ internal and may change without notice.
 | `ESFParams` | The parameter container (dataclass). `save_json` / `load_json` round-trip exactly. The DoD model form follows `battery_chemistry`. |
 | `get_example_params()` | Parameters from the Xu et al. paper (Table I). The reproduction config. |
 | `get_example_params_from_original_repo()` | An alternative parameterization from the original code (does *not* reproduce the paper figures). |
+| `drive_cycle_002()` | A second example drive cycle, alongside `drive_cycle_001()`. |
+| `dst_cycles_from_experimental_data()` | The digitised DST curves from the publication; defaults to the bundled data. |
+| `dst_cycles_experimental_data_v_lims()` | The seven SoC windows `(soc_min, soc_max)` those curves were measured over. |
 | `DataType` | Enum for data-set kinds (`CALENDAR_VS_TEMPERATURE`, `CYCLE_VS_DOD`, …). |
 | `Regime` | Enum: `CALENDAR`, `CYCLING`, `OPERATIONAL`. |
 

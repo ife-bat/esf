@@ -35,7 +35,13 @@ THIS_FOLDER = pathlib.Path(__file__).parent
 # DST_DATA_FOLDER / PRMS_FOLDER come from esf.settings.parameters, which
 # resolves them inside the package. They were duplicated here with a different
 # (repo-relative) expression, so the two could disagree.
-__all__ = ["DST_DATA_FOLDER", "PRMS_FOLDER"]
+__all__ = [
+    "DST_DATA_FOLDER",
+    "PRMS_FOLDER",
+    "DSTCycleDeg",
+    "dst_cycles_experimental_data_v_lims",
+    "dst_cycles_from_experimental_data",
+]
 
 # TODO: save data to file and load it from file to make it possible
 #  to skip running the simulations for each dst cycle every time
@@ -456,28 +462,54 @@ def create_color_list(n_colors: int, cmap: str = "tab10"):
     return mpl.colormaps[cmap](np.linspace(0, 1, n_colors))
 
 
-def dst_cycles_experimental_data_v_lims():
+#: Room temperature assumed for the published DST tests, in degrees celsius.
+#: Stated in the paper's figure; see docs/background-notes.md.
+DST_EXPERIMENTAL_TEMPERATURE_C = 20
+
+
+def dst_cycles_experimental_data_v_lims() -> tuple[list[int], list[int]]:
+    """The seven SoC windows of the published DST tests.
+
+    Returns:
+        ``(soc_min, soc_max)``, each a list of seven values in percent, in the
+        order the data files are numbered.
+    """
     v_soc_min = [25, 40, 25, 50, 25, 45, 65]
     v_soc_max = [100, 100, 85, 100, 75, 75, 75]
     return v_soc_min, v_soc_max
 
 
-def dst_cycles_from_experimental_data(data_folder_path):
+def dst_cycles_from_experimental_data(data_folder_path=None) -> pd.DataFrame:
+    """Load the digitised DST degradation curves from the publication.
+
+    Args:
+        data_folder_path: directory holding the ``DST_<min>_<max>.csv`` files.
+            Defaults to the copy bundled with the package, so the common case
+            needs no argument.
+
+    Returns:
+        A long frame with columns ``N`` (DST cycle number), ``SoH`` (percent)
+        and ``label`` (``"<min>-<max> @ 20°C"``), all seven windows stacked.
+
+    The values are read off the figures of Xu et al. (2018); see
+    :func:`dst_cycles_experimental_data_v_lims` for the windows.
+    """
+    if data_folder_path is None:
+        data_folder_path = DST_DATA_FOLDER
+    data_folder_path = pathlib.Path(data_folder_path)
+
     v_soc_min, v_soc_max = dst_cycles_experimental_data_v_lims()
 
     data = []
-    for i in range(0, 7):
-        label = f"{v_soc_min[i]}_{v_soc_max[i]}"
-        dest_path = f"DST_{label}.csv"
-        df_single = pd.read_csv(data_folder_path / pathlib.Path(dest_path))
+    for soc_min, soc_max in zip(v_soc_min, v_soc_max, strict=True):
+        df_single = pd.read_csv(data_folder_path / f"DST_{soc_min}_{soc_max}.csv")
         df_single.columns = ["N", "SoH"]
-
-        df_single["label"] = f"{v_soc_min[i]}-{v_soc_max[i]} @ 20°C"
+        df_single["label"] = (
+            f"{soc_min}-{soc_max} @ {DST_EXPERIMENTAL_TEMPERATURE_C}°C"
+        )
         data.append(df_single)
-    print(df_single.head())
-    df = pd.concat(data, axis=0, ignore_index=True)
 
-    return df
+    return pd.concat(data, axis=0, ignore_index=True)
 
 
 def plot_dst_experimental_data(ax, data_folder_path):

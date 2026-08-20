@@ -14,6 +14,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-08-20
+
+### Added
+- `drive_cycle_002()`, `dst_cycles_from_experimental_data()` and
+  `dst_cycles_experimental_data_v_lims()` are exported from `esf`. All three
+  were public in practice — the reference UI consumes them — while being
+  internal by the versioning policy, so they could have changed under
+  consumers without a minor bump.
+- `DST_EXPERIMENTAL_TEMPERATURE_C`, the room temperature assumed for the
+  published DST tests, instead of the value being repeated inline.
+
+### Changed
+- `dst_cycles_from_experimental_data()` takes its data folder **optionally**
+  and defaults to the copy bundled with the package, so the common call needs
+  no argument and no path handling. It also accepts a plain string; it
+  previously required a `pathlib.Path` and raised `TypeError` on a string.
+
+### Fixed
+- `dst_cycles_from_experimental_data()` no longer prints a dataframe head to
+  stdout on every call.
+
 ## [0.1.1] — 2026-08-20
 
 Two defects that only showed up once the package was consumed from a wheel
