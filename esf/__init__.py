@@ -56,12 +56,20 @@ from esf.settings.parameters import (
     get_example_params,
     get_example_params_from_original_repo,
 )
-from esf.simulations.cycles import drive_cycle_001, load_drive_cycle
+from esf.simulations.cycles import (
+    drive_cycle_001,
+    drive_cycle_002,
+    load_drive_cycle,
+)
 from esf.simulations.degradation import (
     calc_cycle_at_end_of_life,
     drive_cycle_degradation_calculator,
 )
-from esf.simulations.dst_cycle import DSTCycleDeg
+from esf.simulations.dst_cycle import (
+    DSTCycleDeg,
+    dst_cycles_experimental_data_v_lims,
+    dst_cycles_from_experimental_data,
+)
 from esf.uncertainty import (
     ParameterEnsemble,
     ParameterUncertainty,
@@ -92,7 +100,10 @@ __all__ = [
     "DSTCycleDeg",
     "calc_cycle_at_end_of_life",
     "drive_cycle_001",
+    "drive_cycle_002",
     "drive_cycle_degradation_calculator",
+    "dst_cycles_experimental_data_v_lims",
+    "dst_cycles_from_experimental_data",
     "load_drive_cycle",
     # uncertainty propagation
     "ParameterEnsemble",
