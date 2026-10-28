@@ -19,8 +19,9 @@ print(result[["cycle_number", "loss", "soh"]].tail())
 ```
 
 Any drive cycle works as long as the frame has `time` (s), `soc` (0–1),
-`c-rate`, and `temperature` (K) columns. `esf.load_drive_cycle` reads CSV power
-profiles.
+`c-rate`, and `temperature` (K) columns. A battery power trace becomes that
+frame with `esf.drive_cycle_from_power_csv` (pack energy in Wh, starting SoC,
+temperature, and whether positive power is discharge or charge).
 
 ## Fit parameters from aging data
 

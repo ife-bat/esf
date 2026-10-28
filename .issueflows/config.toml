@@ -71,3 +71,4 @@ test_runner = "pytest"
 essential_marker = "essential"
 # When to triage issue-touched tests: 'close', 'build', 'both', or 'never' (default 'close'). Full-suite audit stays in doctor.
 essential_review = "close"
+worktree_first = false

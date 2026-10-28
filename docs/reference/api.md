@@ -46,7 +46,9 @@ Every facade takes `apply=True` (write into `prms`) / `apply=False` (read via
 |---|---|
 | `drive_cycle_degradation_calculator(df, prms, cycle_numbers=…)` | Predict loss for a drive-cycle frame (`time`, `soc`, `c-rate`, `temperature`). |
 | `drive_cycle_001(…)` | An example drive cycle. |
-| `load_drive_cycle(…)` | Build a drive cycle from a CSV power profile. |
+| `drive_cycle_from_power(time, power, capacity_wh=…, initial_soc=…, temperature=…)` | Drive-cycle frame from a power trace. Time in seconds, SoC 0–1, C-rate, temperature in kelvin. |
+| `drive_cycle_from_power_csv(path, …)` | Same conversion from a CSV. Defaults: `Time (s)`, `Battery Power (W)`, comma separator, positive power discharges. |
+| `load_drive_cycle(…)` | Read a power CSV into `time` (hours) and `power` (W). Does not build the drive-cycle frame. |
 | `calc_cycle_at_end_of_life(f_c, f_t, prms, eol_soh=…)` | Cycles to a given end-of-life SoH. |
 | `DSTCycleDeg(soc_min, soc_max, prms, temperature)` | The DST case-study simulator (`.soh`, `.cycle_numbers`). |
 

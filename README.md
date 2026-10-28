@@ -64,8 +64,20 @@ cycles_to_eol = esf.calc_cycle_at_end_of_life(
 ```
 
 Any drive cycle works as long as the frame has `time` (s), `soc` (0–1),
-`c-rate`, and `temperature` (K) columns; `esf.load_drive_cycle` reads CSV
-power profiles.
+`c-rate`, and `temperature` (K) columns. A battery power trace becomes that
+frame with `esf.drive_cycle_from_power_csv`: pass the pack energy in Wh, the
+starting SoC, the temperature, and whether positive power is discharge or
+charge.
+
+```python
+drive_cycle = esf.drive_cycle_from_power_csv(
+    "battery_power.csv",       # columns "Time (s)", "Battery Power (W)"
+    capacity_wh=200_000,
+    initial_soc=0.9,
+    temperature=25,            # °C, stored as kelvin
+    positive="discharge",
+)
+```
 
 ### Fit parameters from aging data
 

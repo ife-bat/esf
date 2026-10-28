@@ -14,6 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `drive_cycle_from_power()` and `drive_cycle_from_power_csv()` build a
+  drive-cycle frame (time in seconds, SoC, C-rate, temperature in kelvin)
+  from a battery power trace. Pack energy, starting SoC, temperature and the
+  sign of power are arguments. A trace that would leave SoC outside 0–1
+  fails and reports the smallest pack that would have stayed inside.
+
 ## [0.2.0] — 2026-08-20
 
 ### Added

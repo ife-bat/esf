@@ -422,7 +422,11 @@ def load_drive_cycle(
     time_unit: str = "seconds",
     power_unit: str = "W",
 ):
-    """Load a drive cycle from a file or a list of files.
+    """Read a power-versus-time CSV into columns ``time`` (hours) and ``power`` (W).
+
+    This stops at the power trace. The drive-cycle frame the degradation
+    calculator consumes (seconds, SoC, C-rate, kelvin) comes from
+    :func:`esf.drive_cycle_from_power_csv`.
 
     Args:
         path: The path to the file or a list of paths to files.

@@ -23,7 +23,33 @@ result[["cycle_number", "loss", "soh"]].tail()
 ```
 
 `cycle_numbers` selects how many repetitions of the provided cycle to report
-loss at. `esf.load_drive_cycle` builds a drive cycle from a CSV power profile.
+loss at.
+
+## From a battery power trace
+
+Power versus time is not yet that frame. SoC and C-rate follow from the pack
+energy and the sign of the power column, and the file has no temperature.
+`drive_cycle_from_power_csv` takes those as arguments and returns time in
+seconds, SoC as a fraction, C-rate (negative when discharging) and temperature
+in kelvin. The defaults match a comma-separated file with columns
+`Time (s)` and `Battery Power (W)`.
+
+```python
+drive_cycle = esf.drive_cycle_from_power_csv(
+    "battery_power.csv",
+    capacity_wh=200_000,       # pack energy, Wh
+    initial_soc=0.9,
+    temperature=25,            # °C
+    positive="discharge",      # positive battery power leaves the pack
+)
+```
+
+`drive_cycle_from_power` is the same conversion for arrays already in memory.
+If the resulting SoC would leave 0–1, the call fails and reports the smallest
+pack that would have stayed inside from that starting SoC. Measured terminal
+power is used as recorded. Pass `source="traction"` only when the column is a
+drivetrain request; `regen_efficiency` then scales the power returned to the
+pack during regen and leaves discharge unchanged.
 
 ## From real field data
 

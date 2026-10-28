@@ -16,6 +16,9 @@ Simulation (parameters + drive cycle -> degradation)::
 
     result = esf.drive_cycle_degradation_calculator(drive_cycle_frame, prms, cycle_numbers=...)
 
+A battery power trace becomes that frame with drive_cycle_from_power_csv
+(pack energy, starting SoC, temperature, and the sign of power).
+
 Prediction from field data (operational trace + parameters -> degradation)::
 
     op = esf.OperationalData.from_field_dataframe(field_frame)   # SoC/C-rate/T/SoH over time
@@ -70,6 +73,10 @@ from esf.simulations.dst_cycle import (
     dst_cycles_experimental_data_v_lims,
     dst_cycles_from_experimental_data,
 )
+from esf.simulations.power_profile import (
+    drive_cycle_from_power,
+    drive_cycle_from_power_csv,
+)
 from esf.uncertainty import (
     ParameterEnsemble,
     ParameterUncertainty,
@@ -102,6 +109,8 @@ __all__ = [
     "drive_cycle_001",
     "drive_cycle_002",
     "drive_cycle_degradation_calculator",
+    "drive_cycle_from_power",
+    "drive_cycle_from_power_csv",
     "dst_cycles_experimental_data_v_lims",
     "dst_cycles_from_experimental_data",
     "load_drive_cycle",
