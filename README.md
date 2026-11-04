@@ -179,7 +179,9 @@ simulation (pinned end-to-end regression). Beyond the core:
   covariance (`ParameterUncertainty` / `ParameterEnsemble` /
   `simulate_with_uncertainty`); the simulators stay float-only.
 - **Publication reproduction** — the seven DST degradation curves of the paper
-  are reproduced within a stated tolerance (end-to-end regression test).
+  are reproduced within a stated tolerance (end-to-end regression test), when
+  every rainflow cycle is counted as a full cycle
+  (`weight_by_cycle_count=False`; the default weights half cycles by 0.5).
 - **Prediction from field data** — `OperationalData` turns a measured operating
   trace into a prediction.
 

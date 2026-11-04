@@ -24,6 +24,8 @@ def drive_cycle_degradation_calculator(
     peak_finder_resolution=0.01,
     repetitions=1,
     use_model_sets=True,
+    calendar_mode: str = "cycles",
+    weight_by_cycle_count: bool = True,
     verbose=False,
     **kwargs,
 ) -> pd.DataFrame:
@@ -49,6 +51,14 @@ def drive_cycle_degradation_calculator(
         peak_finder_resolution (float, optional): The resolution for the peak finder.
         repetitions (int, optional): The number of repetitions of drive cycle in the test to simulate (defaults to 1).
         use_model_sets (bool, optional): If True, use the model sets. Default is False.
+        calendar_mode (str, optional): How the calendar stress is evaluated. "cycles" (default) sums the
+            calendar stress over the rainflow cycles, each with its own duration, mean SoC and mean temperature.
+            "profile" evaluates it once for the whole drive cycle, using its duration and the time-averaged
+            SoC and temperature (the formulation of Xu et al.).
+        weight_by_cycle_count (bool, optional): If True, weight the cycling stress of each rainflow cycle by
+            its count (0.5 for a half cycle, 1 for a full cycle), as in Xu et al. (default). If False, every
+            rainflow cycle counts as a full cycle; this is the setting that reproduces the DST curves of
+            Xu et al. Fig. 5b (see development/dst-reproduction-reference.md).
         verbose (bool, optional): If True, print the progress of the simulation.
 
     Returns:
@@ -113,6 +123,15 @@ def drive_cycle_degradation_calculator(
         **kwargs,
     )
 
+    if calendar_mode == "cycles":
+        calendar_inputs = None
+    elif calendar_mode == "profile":
+        calendar_inputs = profile_calendar_inputs(t, soc, temperature)
+    else:
+        raise ValueError(
+            f"calendar_mode must be 'cycles' or 'profile', got {calendar_mode!r}"
+        )
+
     # calculate the stress factors
     f_c, f_t, *stress_factors = calculate_stress_factors(
         arr_time,
@@ -122,6 +141,8 @@ def drive_cycle_degradation_calculator(
         arr_n,
         arr_dod,
         use_model_sets=use_model_sets,
+        calendar_inputs=calendar_inputs,
+        weight_by_cycle_count=weight_by_cycle_count,
         **keyword_parameters,
         verbose=verbose,
         **kwargs,
@@ -191,13 +212,18 @@ def calculate_linear_degradation_rates(
     verbose: bool = False,
     **kwargs,
 ):
-    """Calculate the linear degradation rates."""
+    """Calculate the linear degradation rates.
+
+    f_c and f_t are the cycling and calendar contributions of one pass of the
+    drive cycle. Both accumulate with the number of passes (calendar time
+    grows by one drive-cycle duration per pass), so f_d = N * (f_c + f_t).
+    """
     # Consider not returning f_c and f_t
     if verbose:
         print("   [calculating the linear degradation rates] ")
     f_c = f_c.sum()
     f_t = f_t.sum()
-    f_d = cycle_numbers * f_c + f_t
+    f_d = cycle_numbers * (f_c + f_t)
 
     return f_c, f_t, f_d
 
@@ -399,6 +425,23 @@ def count_cycles(
     return arr_crate, arr_dod, arr_n, arr_soc_mean, arr_temp, arr_time
 
 
+def profile_calendar_inputs(
+    t: np.ndarray, soc: np.ndarray, temperature: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Duration, time-averaged SoC and time-averaged temperature of a profile.
+
+    Returned as length-1 arrays (time, soc, temperature), the form
+    calculate_stress_factors expects for its calendar_inputs argument.
+    """
+    t = np.asarray(t, dtype=np.float64)
+    duration = t[-1] - t[0]
+    if duration <= 0:
+        raise ValueError("the drive cycle must span a positive time interval")
+    soc_mean = np.trapezoid(soc, t) / duration
+    temperature_mean = np.trapezoid(temperature, t) / duration
+    return np.array([duration]), np.array([soc_mean]), np.array([temperature_mean])
+
+
 def calc_f(*args: np.ndarray) -> np.ndarray:
     """
     Calculate the stress factor
@@ -513,13 +556,19 @@ def calculate_stress_factors(
     use_model_sets: bool = False,
     calendar_models: list | None = None,
     cycling_models: list | None = None,
+    calendar_inputs: tuple | None = None,
+    weight_by_cycle_count: bool = True,
     verbose: bool = False,
     **kwargs,
 ) -> list[np.ndarray]:
     """Calculate the degradation of a battery cell based on the ESF model.
 
     Arguments:
-
+        calendar_inputs (tuple, optional): (time, soc, temperature) arrays to evaluate the calendar
+            stress with, instead of the per-cycle arr_time, arr_soc_mean and arr_temp
+            (see profile_calendar_inputs).
+        weight_by_cycle_count (bool, optional): If True (default), multiply the cycling stress of each
+            rainflow cycle by its count arr_n (0.5 for a half cycle).
         **kwargs: Additional keyword arguments.
 
     """
@@ -527,12 +576,17 @@ def calculate_stress_factors(
     if cycle_unit == "EFC":
         arr_n = np.array(arr_n) * np.array(arr_dod)
 
+    if calendar_inputs is None:
+        cal_time, cal_soc, cal_temp = arr_time, arr_soc_mean, arr_temp
+    else:
+        cal_time, cal_soc, cal_temp = calendar_inputs
+
     if use_model_sets:
         # TODO: fix this so that it works more generally (only soc, time, dod, and temperature are supported so far for values):
         calendar_values = {
-            "soc": arr_soc_mean,
-            "time": arr_time,
-            "temperature": arr_temp,
+            "soc": cal_soc,
+            "time": cal_time,
+            "temperature": cal_temp,
         }
         cycling_values = {"soc": arr_soc_mean, "temperature": arr_temp, "dod": arr_dod}
 
@@ -593,9 +647,9 @@ def calculate_stress_factors(
         )
 
         calendar_stress_factors = _calc_default_calendar_stress_factors(
-            arr_soc_mean,
-            arr_temp,
-            arr_time,
+            cal_soc,
+            cal_temp,
+            cal_time,
             soc_calendar_stress_model,
             soc_calendar_stress_model_parameters,
             temperature_calendar_stress_model,
@@ -621,6 +675,8 @@ def calculate_stress_factors(
 
     f_calendar = calc_f(*calendar_stress_factors)
     f_cycling = calc_f(*cycling_stress_factors)
+    if weight_by_cycle_count:
+        f_cycling = np.asarray(arr_n, dtype=np.float64) * f_cycling
 
     return f_cycling, f_calendar, calendar_stress_factors, cycling_stress_factors
 

@@ -23,7 +23,21 @@ result[["cycle_number", "loss", "soh"]].tail()
 ```
 
 `cycle_numbers` selects how many repetitions of the provided cycle to report
-loss at.
+loss at. Both the cycling and the calendar contribution accumulate with the
+repetitions: after `N` passes the linear degradation is `N * (f_c + f_t)`.
+
+Two options control how the stress factors are evaluated:
+
+- `calendar_mode="cycles"` (default) sums the calendar stress over the
+  rainflow cycles, each with its own duration, mean SoC and mean temperature.
+  `calendar_mode="profile"` evaluates it once for the whole drive cycle, from
+  its duration and its time-averaged SoC and temperature (the formulation of
+  Xu et al.).
+- `weight_by_cycle_count=True` (default) multiplies each rainflow cycle's
+  cycling stress by its count (0.5 for a half cycle), as in the cycle-ageing
+  sum of Xu et al. `False` counts every rainflow cycle as a full cycle, which
+  is what reproduces the paper's DST curves (see
+  `development/dst-reproduction-reference.md`).
 
 ## From a battery power trace
 
@@ -89,10 +103,18 @@ a given SoC window and temperature:
 ```python
 from esf.simulations.dst_cycle import DSTCycleDeg
 
-c = DSTCycleDeg(soc_min=25, soc_max=100, prms=esf.get_example_params(), temperature=293.15)
+c = DSTCycleDeg(
+    soc_min=25,
+    soc_max=100,
+    prms=esf.get_example_params(),
+    temperature=293.15,
+    degradation_kwargs={"weight_by_cycle_count": False},
+)
 c.soh          # state of health (%) vs c.cycle_numbers
 ```
 
-Run with the paper's Table I constants, this reproduces all seven published DST
-curves within a few tenths of a percentage point (see the end-to-end regression
-in the test suite).
+Run with the paper's Table I constants and every rainflow cycle counted as a
+full cycle (`weight_by_cycle_count=False`), this reproduces the seven published
+DST curves within 1.2 percentage points, and the deepest window (100-25) within
+3.0 (see the end-to-end regression in the test suite). With the default
+half-cycle weighting the curves end 4–8 points higher.

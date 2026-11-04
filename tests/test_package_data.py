@@ -98,7 +98,5 @@ class TestTemperatureUnitGuard:
 
         with warnings.catch_warnings():
             warnings.simplefilter("error", UserWarning)
-            curve = DSTCycleDeg(
-                25, 100, prms=get_example_params(), temperature=293.15
-            )
-        assert curve.soh[-1] == pytest.approx(77.32, abs=0.05)
+            curve = DSTCycleDeg(25, 100, prms=get_example_params(), temperature=293.15)
+        assert curve.soh[-1] == pytest.approx(84.68, abs=0.05)
