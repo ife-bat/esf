@@ -27,6 +27,7 @@ from esf.simulations.degradation import (
     calculate_stress_factors,
     count_cycles,
     drive_cycle_degradation_calculator,
+    profile_calendar_inputs,
     repeat_drive_cycle,
     unpack_drive_cycle_frame,
     unpack_parameters,
@@ -114,7 +115,14 @@ class TestLinearDegradationRates:
         )
         assert f_c_sum == pytest.approx(3e-5)
         assert f_t_sum == pytest.approx(4e-8)
-        np.testing.assert_allclose(f_d, cycle_numbers * 3e-5 + 4e-8)
+        # calendar time accumulates with the passes, like the cycling stress
+        np.testing.assert_allclose(f_d, cycle_numbers * (3e-5 + 4e-8))
+
+    def test_calendar_only_scales_with_repetitions(self):
+        _, _, f_d = calculate_linear_degradation_rates(
+            np.array([1.0, 365.0]), np.array([0.0]), np.array([3.6e-5])
+        )
+        np.testing.assert_allclose(f_d, [3.6e-5, 365 * 3.6e-5])
 
     def test_calc_fd_sums_both_contributions(self):
         assert calc_fd(np.array([1.0, 2.0]), np.array([0.5])) == pytest.approx(3.5)
@@ -205,6 +213,82 @@ class TestCalculateStressFactors:
         np.testing.assert_allclose(f_cyc_1, f_cyc_2)
         np.testing.assert_allclose(f_cal_1, f_cal_2)
 
+    @pytest.mark.parametrize("use_model_sets", [True, False])
+    def test_weight_by_cycle_count(self, example_prms, counted_cycles, use_model_sets):
+        arr_crate, arr_dod, arr_n, arr_soc_mean, arr_temp, arr_time = counted_cycles
+        kw = unpack_parameters(example_prms, use_model_sets=use_model_sets)
+        args = (arr_time, arr_soc_mean, arr_temp, arr_crate, arr_n, arr_dod)
+        f_cyc, f_cal, *_ = calculate_stress_factors(
+            *args, use_model_sets=use_model_sets, weight_by_cycle_count=False, **kw
+        )
+        # weighting is the default
+        f_cyc_w, f_cal_w, *_ = calculate_stress_factors(
+            *args, use_model_sets=use_model_sets, **kw
+        )
+        np.testing.assert_allclose(f_cyc_w, arr_n * f_cyc)
+        np.testing.assert_allclose(f_cal_w, f_cal)
+
+    @pytest.mark.parametrize("use_model_sets", [True, False])
+    def test_calendar_inputs_replace_per_cycle_values(
+        self, example_prms, counted_cycles, use_model_sets
+    ):
+        arr_crate, arr_dod, arr_n, arr_soc_mean, arr_temp, arr_time = counted_cycles
+        kw = unpack_parameters(example_prms, use_model_sets=use_model_sets)
+        calendar_inputs = (np.array([7200.0]), np.array([0.6]), np.array([308.15]))
+        f_cyc_ref, _, *_ = calculate_stress_factors(
+            arr_time,
+            arr_soc_mean,
+            arr_temp,
+            arr_crate,
+            arr_n,
+            arr_dod,
+            use_model_sets=use_model_sets,
+            **kw,
+        )
+        f_cyc, f_cal, *_ = calculate_stress_factors(
+            arr_time,
+            arr_soc_mean,
+            arr_temp,
+            arr_crate,
+            arr_n,
+            arr_dod,
+            use_model_sets=use_model_sets,
+            calendar_inputs=calendar_inputs,
+            **kw,
+        )
+        expected = (
+            proportional_time_k_relation(
+                np.array([7200.0]),
+                *example_prms.stress_model_parameter_values("Calendar", "time"),
+            )
+            * exponential_soc_k_relation(
+                np.array([0.6]),
+                *example_prms.stress_model_parameter_values("Calendar", "soc"),
+            )
+            * exponential_temperature_k_relation(
+                np.array([308.15]),
+                *example_prms.stress_model_parameter_values("Calendar", "temperature"),
+            )
+        )
+        np.testing.assert_allclose(f_cal, expected)
+        np.testing.assert_allclose(f_cyc, f_cyc_ref)
+
+
+class TestProfileCalendarInputs:
+    def test_time_weighted_means(self):
+        t = np.array([0.0, 10.0, 30.0])
+        soc = np.array([0.2, 0.2, 0.8])
+        temp = np.array([298.15, 298.15, 298.15])
+        duration, soc_mean, temp_mean = profile_calendar_inputs(t, soc, temp)
+        assert duration[0] == pytest.approx(30.0)
+        # trapezoid: (10*0.2 + 20*0.5) / 30
+        assert soc_mean[0] == pytest.approx(0.4)
+        assert temp_mean[0] == pytest.approx(298.15)
+
+    def test_rejects_zero_duration(self):
+        with pytest.raises(ValueError):
+            profile_calendar_inputs(np.array([5.0, 5.0]), np.ones(2), np.ones(2))
+
 
 class TestCycleAtEndOfLife:
     def test_round_trip(self, example_prms):
@@ -260,7 +344,95 @@ class TestEndToEnd:
         # previously used a degC reference (25) against a drive cycle in
         # kelvin (298.15), inflating the temperature stress factor to ~4.9;
         # at reference temperature it is now correctly 1.0.
-        assert result["f_c"].iloc[0] == pytest.approx(4.7300181987666376e-05, rel=1e-6)
+        # Re-pinned on 2026-11-04 when half cycles started counting 0.5
+        # (weight_by_cycle_count=True by default): f_c halved.
+        assert result["f_c"].iloc[0] == pytest.approx(2.3650090993833188e-05, rel=1e-6)
         assert result["f_t"].iloc[0] == pytest.approx(2.2348812431982e-09, rel=1e-6)
-        assert result["loss"].iloc[0] == pytest.approx(0.00037275, rel=1e-4)
-        assert result["loss"].iloc[-1] == pytest.approx(0.10085456, rel=1e-4)
+        assert result["loss"].iloc[0] == pytest.approx(0.00018662, rel=1e-4)
+        assert result["loss"].iloc[-1] == pytest.approx(0.07624415, rel=1e-4)
+
+
+class TestCalculatorOptions:
+    def test_calendar_mode_profile_agrees_on_flat_conditions(self, example_prms):
+        # constant temperature and a symmetric triangle around 50 % SoC: the
+        # per-cycle and whole-profile calendar evaluations must agree closely
+        t = np.arange(0.0, 4001.0)
+        soc = 0.5 + 0.2 * (2 * np.abs((t / 1000.0) % 1.0 - 0.5) * 2 - 1)
+        df = pd.DataFrame(
+            {
+                "time": t,
+                "soc": soc,
+                "c-rate": np.gradient(soc, t) * 3600,
+                "temperature": np.full_like(t, 298.15),
+            }
+        )
+        kw = dict(cycle_numbers=np.array([1.0, 100.0]))
+        r_cyc = drive_cycle_degradation_calculator(df, example_prms, **kw)
+        r_prof = drive_cycle_degradation_calculator(
+            df, example_prms, calendar_mode="profile", **kw
+        )
+        assert r_prof["f_t"].iloc[0] == pytest.approx(r_cyc["f_t"].iloc[0], rel=2e-2)
+        np.testing.assert_allclose(r_prof["f_c"], r_cyc["f_c"])
+
+    def test_calendar_mode_profile_uses_whole_duration(
+        self, example_prms, drive_cycle_df
+    ):
+        result = drive_cycle_degradation_calculator(
+            drive_cycle_df,
+            example_prms,
+            cycle_numbers=np.array([1.0]),
+            calendar_mode="profile",
+        )
+        t, soc, temperature, _ = unpack_drive_cycle_frame(drive_cycle_df)
+        duration, soc_mean, temp_mean = profile_calendar_inputs(t, soc, temperature)
+        expected = (
+            proportional_time_k_relation(
+                duration,
+                *example_prms.stress_model_parameter_values("Calendar", "time"),
+            )
+            * exponential_soc_k_relation(
+                soc_mean, *example_prms.stress_model_parameter_values("Calendar", "soc")
+            )
+            * exponential_temperature_k_relation(
+                temp_mean,
+                *example_prms.stress_model_parameter_values("Calendar", "temperature"),
+            )
+        )
+        assert result["f_t"].iloc[0] == pytest.approx(expected[0], rel=1e-6)
+
+    def test_unknown_calendar_mode_raises(self, example_prms, drive_cycle_df):
+        with pytest.raises(ValueError, match="calendar_mode"):
+            drive_cycle_degradation_calculator(
+                drive_cycle_df,
+                example_prms,
+                cycle_numbers=np.array([1.0]),
+                calendar_mode="average",
+            )
+
+    def test_weight_by_cycle_count_halves_half_cycles(self, example_prms):
+        # three triangle cycles counted as six half cycles -> weighted f_c is half
+        t = np.arange(0.0, 3001.0)
+        soc = 0.5 + 0.2 * (2 * np.abs((t / 1000.0) % 1.0 - 0.5) * 2 - 1)
+        df = pd.DataFrame(
+            {
+                "time": t,
+                "soc": soc,
+                "c-rate": np.gradient(soc, t) * 3600,
+                "temperature": np.full_like(t, 298.15),
+            }
+        )
+        kw = dict(cycle_numbers=np.array([1.0]))
+        r = drive_cycle_degradation_calculator(
+            df, example_prms, weight_by_cycle_count=False, **kw
+        )
+        r_w = drive_cycle_degradation_calculator(df, example_prms, **kw)
+        assert r_w["f_c"].iloc[0] == pytest.approx(0.5 * r["f_c"].iloc[0], rel=1e-9)
+
+    def test_calendar_ageing_accumulates_over_passes(
+        self, example_prms, drive_cycle_df
+    ):
+        result = drive_cycle_degradation_calculator(
+            drive_cycle_df, example_prms, cycle_numbers=np.array([1.0, 10.0])
+        )
+        f_c, f_t = result["f_c"].iloc[0], result["f_t"].iloc[0]
+        np.testing.assert_allclose(result["f_d"], [f_c + f_t, 10 * (f_c + f_t)])

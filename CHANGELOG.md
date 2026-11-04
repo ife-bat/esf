@@ -20,6 +20,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   from a battery power trace. Pack energy, starting SoC, temperature and the
   sign of power are arguments. A trace that would leave SoC outside 0–1
   fails and reports the smallest pack that would have stayed inside.
+- `drive_cycle_degradation_calculator(..., calendar_mode=...)`: `"cycles"`
+  (default, previous behaviour) sums the calendar stress over the rainflow
+  cycles with their own duration, mean SoC and temperature; `"profile"`
+  evaluates it once over the whole drive cycle with time-averaged SoC and
+  temperature, as in Xu et al. `profile_calendar_inputs()` computes those
+  averages.
+- `drive_cycle_degradation_calculator(..., weight_by_cycle_count=...)`:
+  `False` restores the previous behaviour (every rainflow cycle counts as a
+  full cycle), which is what reproduces the DST curves of Xu et al. Fig. 5b.
+
+### Changed
+- **Breaking (model output):** the cycling stress of each rainflow cycle is
+  now multiplied by its count, 0.5 for a half cycle, as in the cycle-ageing
+  sum of Xu et al. (`weight_by_cycle_count=True` by default). Previously half
+  cycles counted as full cycles, so cycle ageing could be up to twice as
+  large. For `drive_cycle_001` with the example parameters `f_c` halves. The
+  DST reproduction tests pass `weight_by_cycle_count=False` explicitly, and
+  the weighted DST curves are pinned separately.
+
+### Fixed
+- Calendar ageing now accumulates over the repetitions of a drive cycle:
+  the linear degradation after `N` passes is `N * (f_c + f_t)`, not
+  `N * f_c + f_t`. Previously only one pass worth of calendar ageing was
+  counted however many passes were simulated, which under-predicted fade for
+  profiles with long rest periods. The DST reproduction curves gain about
+  0.6 pp of fade; the drift pins in `tests/test_dst_reproduction.py` are
+  re-pinned, and the 100-25 case (now 3.0 pp below Fig. 5b) is marked xfail.
 
 ## [0.2.0] — 2026-08-20
 
