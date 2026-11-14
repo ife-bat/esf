@@ -29,6 +29,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `drive_cycle_degradation_calculator(..., weight_by_cycle_count=...)`:
   `False` restores the previous behaviour (every rainflow cycle counts as a
   full cycle), which is what reproduces the DST curves of Xu et al. Fig. 5b.
+- Three more stress-factor forms, selected through the model labels of
+  `ESFParams`: `temperature_calendar_model="ExponentialQuadratic"`
+  (`exp((k_1 ΔT + k_2) ΔT)`), `temperature_cycling_model="Piecewise"`
+  (exponential above the reference temperature and below a lower
+  temperature, linear in between, so that cycle ageing can have its minimum
+  below room temperature) and `soc_cycling_model="Logarithmic"`
+  (`k ln(SoC / SoC_ref) + 1`). Their parameters are new `ESFParams` fields
+  (`k_quadratic_*_temperature_calendar`, `*_piecewise_*_temperature_cycling`,
+  `k_logarithmic_soc_cycling`) with defaults, so existing parameter files
+  load unchanged.
+- A C-rate stress factor for cycle ageing: the `"Linear"` rate model
+  (`k_1_rate (|C| - reference_rate) + 1`) and the model set
+  `degradation_model="with_rate"` that uses it. With that set
+  `drive_cycle_degradation_calculator` evaluates the factor with the mean
+  absolute C-rate of each rainflow cycle (`count_cycles(absolute_rate=True)`),
+  and the `c_rate` column of the result is that mean absolute C-rate. The
+  other model sets are unaffected.
 
 ### Changed
 - **Breaking (model output):** the cycling stress of each rainflow cycle is
@@ -40,6 +57,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   the weighted DST curves are pinned separately.
 
 ### Fixed
+- With `cycle_unit="EFC"` (cycling stress given per equivalent full cycle)
+  and `weight_by_cycle_count=False`, each rainflow cycle is now still
+  weighted by its DoD. Previously the DoD weighting was dropped together
+  with the count weighting, so every cycle counted as one full equivalent
+  cycle whatever its depth. `cycle_unit="N"` and the default
+  `weight_by_cycle_count=True` are unchanged.
 - Calendar ageing now accumulates over the repetitions of a drive cycle:
   the linear degradation after `N` passes is `N * (f_c + f_t)`, not
   `N * f_c + f_t`. Previously only one pass worth of calendar ageing was

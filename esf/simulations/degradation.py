@@ -112,6 +112,10 @@ def drive_cycle_degradation_calculator(
         print(" keyword_parameters ".center(80, "-"))
         print(keyword_parameters)
 
+    # A C-rate stress factor needs the magnitude of the current in each cycle;
+    # the mean of the signed C-rate over a cycle is close to zero.
+    uses_rate = use_model_sets and "rate" in prms.get_model_set()["Cycling"]
+
     # perform cycle counting:
     arr_crate, arr_dod, arr_n, arr_soc_mean, arr_temp, arr_time = count_cycles(
         t,
@@ -119,6 +123,7 @@ def drive_cycle_degradation_calculator(
         c_rate,
         temperature,
         peak_finder_resolution=peak_finder_resolution,
+        absolute_rate=uses_rate,
         verbose=verbose,
         **kwargs,
     )
@@ -398,8 +403,18 @@ def count_cycles(
     c_rate: np.ndarray,
     temperature: np.ndarray,
     peak_finder_resolution: float,
+    absolute_rate: bool = False,
     **kwargs,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Rainflow-count a drive cycle.
+
+    Returns, per counted cycle: mean C-rate, DoD, count (0.5 or 1), mean SoC,
+    mean temperature and duration. With ``absolute_rate=True`` the first is
+    the mean of the absolute C-rate (the current magnitude a C-rate stress
+    factor needs) instead of the mean of the signed C-rate.
+    """
+    if absolute_rate:
+        c_rate = np.abs(c_rate)
     # cycle counting
     cycle_count = CycleCounter(
         time_v=t,
@@ -569,11 +584,25 @@ def calculate_stress_factors(
             (see profile_calendar_inputs).
         weight_by_cycle_count (bool, optional): If True (default), multiply the cycling stress of each
             rainflow cycle by its count arr_n (0.5 for a half cycle).
+        cycle_unit (str, optional): With "EFC" the cycling stress is a rate per equivalent full cycle
+            and each rainflow cycle is additionally weighted by its DoD.
+        arr_crate (np.ndarray): C-rate per cycle. Only used by a "rate" stress factor, which expects
+            the mean absolute C-rate of the cycle.
         **kwargs: Additional keyword arguments.
 
     """
+    # Weight of each rainflow cycle in the cycle-ageing sum: its count (0.5 for
+    # a half cycle) or 1 if every cycle is counted as full. With cycle_unit
+    # "EFC" the cycling stress is a rate per equivalent full cycle, and a cycle
+    # of depth DoD is DoD equivalent full cycles, whichever way it is counted.
     # TODO: move support for this to the drive cycle degradation calculator
+    if weight_by_cycle_count:
+        cycle_weights = np.asarray(arr_n, dtype=np.float64)
+    else:
+        cycle_weights = np.ones(len(arr_n), dtype=np.float64)
     if cycle_unit == "EFC":
+        cycle_weights = cycle_weights * np.asarray(arr_dod, dtype=np.float64)
+        # the count seen by additional cycling models stays in EFC, as before
         arr_n = np.array(arr_n) * np.array(arr_dod)
 
     if calendar_inputs is None:
@@ -588,7 +617,14 @@ def calculate_stress_factors(
             "time": cal_time,
             "temperature": cal_temp,
         }
-        cycling_values = {"soc": arr_soc_mean, "temperature": arr_temp, "dod": arr_dod}
+        cycling_values = {
+            "soc": arr_soc_mean,
+            "temperature": arr_temp,
+            "dod": arr_dod,
+            # mean absolute C-rate per cycle when the model set has a rate
+            # factor (see count_cycles(absolute_rate=True))
+            "rate": np.asarray(arr_crate, dtype=np.float64),
+        }
 
         calendar_stress_factors = _calc_degradation_from_model_set(
             calendar_models, calendar_values, verbose=verbose
@@ -675,8 +711,8 @@ def calculate_stress_factors(
 
     f_calendar = calc_f(*calendar_stress_factors)
     f_cycling = calc_f(*cycling_stress_factors)
-    if weight_by_cycle_count:
-        f_cycling = np.asarray(arr_n, dtype=np.float64) * f_cycling
+    if weight_by_cycle_count or cycle_unit == "EFC":
+        f_cycling = cycle_weights * f_cycling
 
     return f_cycling, f_calendar, calendar_stress_factors, cycling_stress_factors
 

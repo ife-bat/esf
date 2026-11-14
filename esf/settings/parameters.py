@@ -121,6 +121,11 @@ MODEL_SETS = {
         "Calendar": ["time", "soc", "temperature"],
         "Cycling": ["dod", "soc", "temperature", "high_soc"],
     },
+    # cycle ageing with a C-rate stress factor (and no high-SoC factor)
+    "with_rate": {
+        "Calendar": ["time", "soc", "temperature"],
+        "Cycling": ["dod", "soc", "temperature", "rate"],
+    },
 }
 
 
@@ -326,7 +331,9 @@ class ESFParams:
     k_2_dod: float = -0.501
     k_3_dod: float = -147740.0
 
-    # Rate model parameters (not implemented yet):
+    # Rate model parameters. The "Linear" cycling model uses reference_rate
+    # and k_1_rate, and is only active in a model set that lists "rate"
+    # (e.g. degradation_model="with_rate"). k_2_rate and k_3_rate are unused.
     reference_rate: float = 1.0
     k_1_rate: float = 0.0001
     k_2_rate: float = 0.0001
@@ -339,6 +346,22 @@ class ESFParams:
     k_linear_2_soc_calendar: float = 0.0001  # added linear soc model
     k_linear_1_soc_cycling: float = 0.0001  # added linear soc model
     k_linear_2_soc_cycling: float = 0.0001  # added linear soc model
+
+    # "ExponentialQuadratic" calendar temperature model:
+    #   exp((k_1 (T - T_ref) + k_2) (T - T_ref))
+    k_quadratic_1_temperature_calendar: float = 0.0
+    k_quadratic_2_temperature_calendar: float = 0.0698782039
+
+    # "Piecewise" cycling temperature model: exponential above T_ref and below
+    # T_ref - width, linear in between (c_1 at T_ref, c_2 at T_ref - width)
+    c_piecewise_1_temperature_cycling: float = 1.0
+    c_piecewise_2_temperature_cycling: float = 1.0
+    k_piecewise_1_temperature_cycling: float = 0.0698782039
+    k_piecewise_2_temperature_cycling: float = 0.0
+    width_piecewise_temperature_cycling: float = 10.0
+
+    # "Logarithmic" cycling SoC model: k ln(soc / reference_soc) + 1
+    k_logarithmic_soc_cycling: float = 0.5
 
     # ------------------------------------------------------------------------------------------------
     #        additional parameters to be added (for example for additional stress factors models)

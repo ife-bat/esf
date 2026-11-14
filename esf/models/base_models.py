@@ -176,6 +176,106 @@ def exponential_temperature_k_relation(x, k, x_ref=298.0):
     return _exponential(x, x_ref, factor)
 
 
+def exponential_quadratic_temperature_k_relation(x, k_1, k_2, x_ref=298.15):
+    """
+    Exponential temperature stress factor with a quadratic exponent.
+
+    ``S = exp((k_1 * (x - x_ref) + k_2) * (x - x_ref))``. With ``k_1 = 0`` it
+    is a plain exponential in the temperature difference. It equals 1 at the
+    reference temperature. Only temperature differences enter, so kelvin and
+    degC give the same value as long as ``x`` and ``x_ref`` share the unit.
+
+    Args:
+        x (float): The temperature value.
+        k_1 (float): The quadratic coefficient (per temperature unit squared).
+        k_2 (float): The linear coefficient (per temperature unit).
+        x_ref (float): The reference temperature (default is 298.15 K).
+
+    Returns:
+        float: The stress factor value.
+    """
+    difference = np.asarray(x, dtype=np.float64) - x_ref
+    return np.exp((k_1 * difference + k_2) * difference)
+
+
+def piecewise_temperature_k_relation(x, c_1, c_2, k_1, k_2, x_width=10.0, x_ref=298.15):
+    """
+    Piecewise temperature stress factor with a minimum below the reference.
+
+    Cycle ageing is often slowest a little below room temperature and grows
+    towards both warm and cold. With ``x_low = x_ref - x_width``::
+
+        x > x_ref              S = c_1 * exp(k_1 * (x - x_ref))
+        x_low <= x <= x_ref    S = c_2 + (c_1 - c_2) * (x - x_low) / x_width
+        x < x_low              S = c_2 * exp(k_2 * (x_low - x))
+
+    The three pieces join continuously: ``S(x_ref) = c_1`` and
+    ``S(x_low) = c_2``. Only temperature differences enter.
+
+    Args:
+        x (float): The temperature value.
+        c_1 (float): The stress factor at the reference temperature (1 if the
+            factor is normalised there).
+        c_2 (float): The stress factor at ``x_ref - x_width``.
+        k_1 (float): The exponential coefficient above the reference.
+        k_2 (float): The exponential coefficient below ``x_ref - x_width``.
+        x_width (float): The width of the linear interval (default is 10).
+        x_ref (float): The reference temperature (default is 298.15 K).
+
+    Returns:
+        float: The stress factor value.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    x_low = x_ref - x_width
+    # each branch is evaluated with its argument clipped to the branch's own
+    # range, so that the exponentials cannot overflow where they are not used
+    warm = c_1 * np.exp(k_1 * np.clip(x - x_ref, 0.0, None))
+    cold = c_2 * np.exp(k_2 * np.clip(x_low - x, 0.0, None))
+    between = c_2 + (c_1 - c_2) * (x - x_low) / x_width
+    return np.where(x > x_ref, warm, np.where(x < x_low, cold, between))
+
+
+def logarithmic_soc_k_relation(x, k, x_ref=0.5):
+    """
+    Logarithmic SOC stress factor model.
+
+    ``S = k * ln(x / x_ref) + 1``, floored at zero. It equals 1 at the
+    reference SOC and reaches zero at ``x = x_ref * exp(-1 / k)``; below that
+    the logarithm alone would turn negative, hence the floor.
+
+    Args:
+        x (float): The SOC value.
+        k (float): The rate constant.
+        x_ref (float): The reference SOC value (default is 0.5 fraction of the total capacity).
+
+    Returns:
+        float: The stress factor value.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    out = np.zeros_like(x)
+    positive = x > 0.0
+    out[positive] = k * np.log(x[positive] / x_ref) + 1.0
+    return np.maximum(out, 0.0)
+
+
+def linear_rate_k_relation(x, k, x_ref=1.0):
+    """
+    Linear C-rate stress factor model.
+
+    ``S = k * (x - x_ref) + 1``, floored at zero. It equals 1 at the reference
+    C-rate.
+
+    Args:
+        x (float): The C-rate (absolute value, 1/h).
+        k (float): The rate constant (per C).
+        x_ref (float): The reference C-rate (default is 1.0).
+
+    Returns:
+        float: The stress factor value.
+    """
+    return np.maximum(k * (np.asarray(x, dtype=np.float64) - x_ref) + 1.0, 0.0)
+
+
 def linear_time_k_relation(x, k_1, k_2, x_ref=1.0):
     """
     Linear time stress factor model.

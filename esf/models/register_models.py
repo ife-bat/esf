@@ -262,6 +262,69 @@ def run():
             x_ref=dict(value=298.15, vary=False),
         ),
     )
+    model_register.register(
+        base_models.exponential_quadratic_temperature_k_relation,
+        "Calendar",
+        "temperature",
+        "ExponentialQuadratic",
+        parameter_names=[
+            "x",
+            "k_quadratic_1_temperature_calendar",
+            "k_quadratic_2_temperature_calendar",
+            "reference_temperature",
+        ],
+        parameter_dict=dict(
+            k_1=dict(value=0.0, vary=True, min=-0.1, max=0.1),
+            k_2=dict(value=0.05, vary=True, min=0.00001, max=0.99),
+            x_ref=dict(value=298.15, vary=False),
+        ),
+    )
+    model_register.register(
+        base_models.piecewise_temperature_k_relation,
+        "Cycling",
+        "temperature",
+        "Piecewise",
+        parameter_names=[
+            "x",
+            "c_piecewise_1_temperature_cycling",
+            "c_piecewise_2_temperature_cycling",
+            "k_piecewise_1_temperature_cycling",
+            "k_piecewise_2_temperature_cycling",
+            "width_piecewise_temperature_cycling",
+            "reference_temperature",
+        ],
+        parameter_dict=dict(
+            # the factor is normalised at the reference temperature
+            c_1=dict(value=1.0, vary=False),
+            c_2=dict(value=1.0, vary=True, min=0.0),
+            k_1=dict(value=0.03, vary=True, min=0.0, max=0.99),
+            k_2=dict(value=0.03, vary=True, min=0.0, max=0.99),
+            x_width=dict(value=10.0, vary=False),
+            x_ref=dict(value=298.15, vary=False),
+        ),
+    )
+    model_register.register(
+        base_models.logarithmic_soc_k_relation,
+        "Cycling",
+        "soc",
+        "Logarithmic",
+        parameter_names=["x", "k_logarithmic_soc_cycling", "reference_soc"],
+        parameter_dict=dict(
+            k=dict(value=0.5, vary=True, min=0.0, max=10.0),
+            x_ref=dict(value=0.5, vary=False),
+        ),
+    )
+    model_register.register(
+        base_models.linear_rate_k_relation,
+        "Cycling",
+        "rate",
+        "Linear",
+        parameter_names=["x", "k_1_rate", "reference_rate"],
+        parameter_dict=dict(
+            k=dict(value=0.01, vary=True, min=-1.0, max=10.0),
+            x_ref=dict(value=1.0, vary=False),
+        ),
+    )
     # Note: "Proportional" means proportional to x (not necessarily time), so to
     #    get same time model as used in the reference, you need to use the
     #    "Constant" model.
